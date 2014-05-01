@@ -53,15 +53,8 @@ script or userscript (depends on where you call the function).
 
 To set the functions you call `setFunctions` with an object as the argument. Every
 entry in the object is each one callable function. The object key is the name of
-the function and the value is the function itself. An example of this can be
-```JavaScript
-{
-  "GM_getValue": GM_getValue,
-  "GM_setValue": GM_setValue
-}
-```
-
-So to link `GM_getValue` and `GM_setValue` to LevelAPI you call `setFunctions`
+the function and the value is the function itself. To link `GM_getValue` and
+`GM_setValue` to LevelAPI you call `setFunctions` as follows
 ```JavaScript
 setFunctions({
   "GM_getValue": GM_getValue,
