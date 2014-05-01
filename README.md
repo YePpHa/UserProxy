@@ -90,9 +90,13 @@ what function you try to call.
 
 TODO
 ----
-* Create a garbage collector which will clean callback functions which have already been
+ * Create a garbage collector which will clean callback functions which have already been
 used.
-* Create an API to delete stored functions.
+ * Create an API to delete stored functions.
+ * Include HTML Elements in the transform process.
+ * Include a way to transfer an object with an reference to itself or something like that.
+ * Make it easy to add an extra link so that LevelAPI is only a gateway from the page to
+   and extension's background page (Useful for extension development).
 
 License
 -------
