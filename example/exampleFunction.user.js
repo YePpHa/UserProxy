@@ -354,33 +354,22 @@
   
   // This function will be injected into the page and will have access to levelAPI and call the functions linked to levelAPI.
   function myFunc(levelAPI) {
+    function exampleFunction(myMsg) {
+      console.log("[exampleFunction] " + myMsg);
+    }
     // Settings the functions which will be callable from the userscript.
     levelAPI.setFunctions({ });
     
     // Call userscript level functions.
-    levelAPI.call("GM_xmlhttpRequest", [{ url: "http://www.google.com/", method: "GET", onload: function(response){ console.log("response", response); } }], function(val){console.log(val);});
-  }
-  // Bind function used to call Greasemonkey API from other references.
-  function _bind(func, b){
-    if (typeof func !== "function") return function(){ throw new Error("Function not supported!"); };
-    return func.call.apply(func.bind, arguments);
+    levelAPI.call("testFunctionCaller", [exampleFunction], function(val){console.log("[Callback Function] " + val);});
   }
   
-  // Linking the Greasemonkey API to the page level through levelAPI.
   privateVar.levelAPI.setFunctions({
-    GM_log: _bind(GM_log),
-    GM_info: _bind(GM_info),
-    GM_deleteValue: _bind(GM_deleteValue),
-    GM_getValue: _bind(GM_getValue),
-    GM_listValues: _bind(GM_listValues),
-    GM_setValue: _bind(GM_setValue),
-    GM_getResourceText: _bind(GM_getResourceText),
-    GM_getResourceURL: _bind(GM_getResourceURL),
-    GM_addStyle: _bind(GM_addStyle),
-    GM_openInTab: _bind(GM_openInTab),
-    GM_registerMenuCommand: _bind(GM_registerMenuCommand),
-    GM_setClipboard: _bind(GM_setClipboard),
-    GM_xmlhttpRequest: _bind(GM_xmlhttpRequest)
+    "testFunctionCaller": function(func){
+      func("Okay I just called a function...");
+      
+      return "myReturnValue";
+    }
   });
   
   // Inject myFunc into the page level to give it complete access of the unsafeWindow. The levelAPI can call the linked functions asynchronous.

@@ -82,7 +82,6 @@
       
       if (exec[1] === "unsafe") {
         if (functionStorage.length <= exec[2]) throw new Error("Function not found in memory!");
-        console.log("Getting function with id=" + exec[2], functionStorage, functionStorage[exec[2]]);
         return functionStorage[exec[2]];
       } else if (exec[1] === "safe") {
         var func = createFunctionCaller(funcLink);
@@ -246,7 +245,6 @@
     
     if (exec[1] === "safe") {
       if (functionStorage.length <= exec[2]) throw new Error("Function not found in memory!");
-      console.log("Getting function with id=" + exec[2], functionStorage, functionStorage[exec[2]]);
       return functionStorage[exec[2]];
     } else if (exec[1] === "unsafe") {
       var func = createFunctionCaller(funcLink);
