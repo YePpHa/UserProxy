@@ -47,6 +47,10 @@ This function can then be injected into the page by calling
 scopeScript(exampleScript);
 ```
 
+The injected function/script will have the variable `window` as an empty object and
+the variable `unsafeWindow` which is a reference to the original `window object`.
+The `document` variable is the exact same as normal.
+
 ### Setting the functions
 This function will link the functions you want to be made available for the injected
 script or userscript (depends on where you call the function).
