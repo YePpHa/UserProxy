@@ -92,6 +92,13 @@ the callback function will be given value as an argument, because the function
 The `call` function is run asynchronous and therefore call will return `null` no matter
 what function you try to call.
 
+Security
+--------
+You should only use this library in conjuction with websites you trust like Google,
+YouTube, Facebook, Twitter and etc. This is because levelAPI creates an unsecure
+connection between the injected userscript and levelAPI, which can be intercepted by
+any malicious websites.
+
 TODO
 ----
  * Create a garbage collector which will clean callback functions which have already been

@@ -20,7 +20,7 @@
   IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
   CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  **/
-(function(win){
+(function(){
   "use strict";
   
   function injectedScript() {
@@ -123,7 +123,7 @@
       if (d.method) {
         if (typeof unsafeFunctions[d.method] === "function") {
           var args = restoreOriginalObject(d.arguments);
-          var returnVal = unsafeFunctions[d.method].apply(window, args);
+          var returnVal = unsafeFunctions[d.method].apply(namespace, args);
           if (d.callback) {
             call(d.callback, [returnVal]);
           }
@@ -134,21 +134,21 @@
         var args = restoreOriginalObject(d.arguments);
         var func = getFunctionByLink(d.call);
         
-        var returnVal = func.apply(window, args);
+        var returnVal = func.apply(namespace, args);
         if (d.callback) {
           call(d.callback, [returnVal]);
         }
       }
     }
     function call(_call, args) {
-      window.postMessage(JSON.stringify({
+      namespace.postMessage(JSON.stringify({
         address: "pageLevel",
         call: _call,
         arguments: createSafeObject(args)
       }), "*");
     }
     function callMethod(method, args, callback) {
-      window.postMessage(JSON.stringify({
+      namespace.postMessage(JSON.stringify({
         address: "pageLevel",
         method: method,
         arguments: createSafeObject(args),
@@ -156,7 +156,7 @@
       }), "*");
     }
     function initPageLevel() {
-      window.addEventListener("message", safeWindowMessageListener, false);
+      namespace.addEventListener("message", safeWindowMessageListener, false);
     }
     function setFunctions(unsafeFuncs) {
       unsafeFunctions = unsafeFuncs
@@ -177,18 +177,16 @@
     return str.substring(1, str.length - 1);
   }
   function injectScript(func, filename, args) {
-    try {
-      var script = document.createElement("script"), p = (document.body || document.head || document.documentElement);
-      if (!p) return;
-      script.setAttribute("type", "text/javascript");
-      
-      var sourceURL = (typeof filename === "string" ? "\n//# sourceURL=" + encodeURIComponent(filename) : "");
-      var argsStringified = stringifyArguments(args) || "";
-      
-      script.appendChild(document.createTextNode("(" + func + ")(" + argsStringified + ");" + sourceURL));
-      p.appendChild(script);
-      p.removeChild(script);
-    } catch (e) {}
+    var script = document.createElement("script"), p = (document.body || document.head || document.documentElement);
+    if (!p) return;
+    script.setAttribute("type", "text/javascript");
+    
+    var sourceURL = (typeof filename === "string" ? "\n//# sourceURL=" + encodeURIComponent(filename) : "");
+    var argsStringified = stringifyArguments(args) || "";
+    
+    script.appendChild(document.createTextNode("(" + func + ")(" + argsStringified + ");" + sourceURL));
+    p.appendChild(script);
+    p.removeChild(script);
   }
   function createSafeObject(obj) {
     if (isArray(obj)) {
@@ -286,7 +284,7 @@
     if (d.method) {
       if (typeof safeFunctions[d.method] === "function") {
         var args = restoreOriginalObject(d.arguments);
-        var returnVal = safeFunctions[d.method].apply(window, args);
+        var returnVal = safeFunctions[d.method].apply(namespace, args);
         if (d.callback) {
           call(d.callback, [returnVal]);
         }
@@ -297,21 +295,21 @@
       var args = restoreOriginalObject(d.arguments);
       var func = getFunctionByLink(d.call);
       
-      var returnVal = func.apply(window, args);
+      var returnVal = func.apply(namespace, args);
       if (d.callback) {
         call(d.callback, [returnVal]);
       }
     }
   }
   function call(_call, args) {
-    window.postMessage(JSON.stringify({
+    namespace.postMessage(JSON.stringify({
       address: "safeLevel",
       call: _call,
       arguments: createSafeObject(args)
     }), "*");
   }
   function callMethod(method, args, callback) {
-    window.postMessage(JSON.stringify({
+    namespace.postMessage(JSON.stringify({
       address: "safeLevel",
       method: method,
       arguments: createSafeObject(args),
@@ -319,7 +317,7 @@
     }), "*");
   }
   function initPageLevel() {
-    window.addEventListener("message", unsafeWindowMessageListener, false);
+    namespace.addEventListener("message", unsafeWindowMessageListener, false);
   }
   function setFunctions(safeFuncs) {
     safeFunctions = safeFuncs;
@@ -335,8 +333,15 @@
   }
   var functionStorage = [], callbackFunctionStorage = {}, safeFunctions = {};
   
+  var namespace;
+  if (typeof module !== "undefined") {
+    namespace = module.exports = _strftime;
+  } else {
+    namespace = (function(){ return this || (1,eval)("this") }());
+  }
+  
   // Initialize the connection
   initPageLevel();
   
-  win.levelAPI = { setFunctions: setFunctions, call: callMethod, scopeScript: scopeScript };
-})(window);
+  namespace.levelAPI = { setFunctions: setFunctions, call: callMethod, scopeScript: scopeScript };
+})();
