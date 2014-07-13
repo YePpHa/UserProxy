@@ -1,0 +1,6 @@
+# ignore
+UserProxy.debug.js
+test.user.js
+
+#node_modules
+node_modules/
