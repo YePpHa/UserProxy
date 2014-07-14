@@ -1,6 +1,12 @@
 UserProxy
 ==============
-This library will make it possible to inject your userscript into the page and still have access to functions like GM_setValue, GM_getValue, GM_log and GM_xmlhttpRequest.
+This library will make it possible to inject your userscript into the page and still
+have access to functions like GM_setValue, GM_getValue, GM_log and GM_xmlhttpRequest.
+
+This is useful for the changes made to Firefox 32+, which limits the unsafeWindow. So
+to maintain the same, old `unsafeWindow` you will have to inject your userscript into
+the page, where you don't have access to the GM api. What UserProxy does is that it
+maintains the old `unsafeWindow` while the userscript still have access to the GM api.
 
 How does it work?
 -----------------
@@ -26,6 +32,23 @@ Getting started
 To start using this library you need to include `UserProxy.js` in your userscript.
 After that you will have to move your userscript into a function which you can
 pass to `connect`.
+
+You will then have to modify the userscript to handle asynchronous functions instead
+of synchronous functions. The difference is that you have to attach callback functions
+to an asynchrnous function whereas synchronous functions return their result.
+
+So if you need to call `GM_getValue` for the synchronous method it would look like this
+```JavaScript
+var myValue = GM_getValue("myKey");
+// ... your code
+```
+
+whereas for the asynchronous method using UserProxy it would look like this
+```JavaScript
+GM_getValue("myKey").then(function(myValue){
+  // ... your code
+});
+```
 
 API
 ---
@@ -61,7 +84,12 @@ UserProxy.setFunctions({
   "GM_getValue": GM_getValue,
   "GM_setValue": GM_setValue
 });
+// ...
+UserProxy.connect(exampleScript);
 ```
+
+Please note that after you have called `connect` you can't change the functions
+for the injected script i.e. `exampleScript`.
 
 ### Calling functions
 To call a function can only be done for the functions made available through the
@@ -83,6 +111,74 @@ is needed to i.e. get the value of `myKey`. To set the callback a function
 GM_getValue("myKey").then(function(value){
   // ... your callback code
 });
+```
+
+### Alternate way to call functions
+It's possible to also call the functions by using `call` where the first argument
+is the method and the rest is the argument that should be passed to the defined
+function.
+
+```JavaScript
+UserProxy.call("GM_getValue", "myKey").then(function(value){
+  // ... your callback code
+});
+```
+
+### Prepare function call
+If you're going to call the same function with the same callback function mulltiple
+times. Then you can use `prepareCall`, where the first argument is the method, the
+second argument is the callback. The arguments after that will be passed to the
+defined function.
+
+The `prepareCall` function will return a function where the arguments are passed to the defined
+function.
+
+```JavaScript
+function callback() {
+  // ... your code
+}
+var myFunc = UserProxy.prepareCall("GM_setValue", callback}, "myKey");
+
+myFunc("First value"); // Will call GM_setValue("myKey", "First value").then(callback);
+myFunc("Second value"); // Will call GM_setValue("myKey", "Second value").then(callback);
+```
+
+### Listing defined functions
+To list the defined functions in the injected code you can call `listFunctions`,
+which will return an array of all the callable functions through UserProxy.
+
+```JavaScript
+var myFunctions = UserProxy.listFunctions();
+```
+
+### Getting a defined function
+To get a defined function in the injected code through UserProxy you call
+`getFunction`, where the argument is the method.
+
+```JavaScript
+var myFunction = UserProxy.getFunction("GM_getValue");
+```
+
+### Setting the UserProxy namespace for the injected code
+If your injected code somehow uses the namespace `UserProxy` you can set it to
+something else. This is done before the `connect` function has been called.
+
+So if you want the namespace to be `MyProxy` instead of `UserProxy` you can do
+the following:
+
+```JavaScript
+UserProxy.setNamespace("MyProxy");
+// ... 
+UserProxy.connect(exampleScript);
+```
+
+In the injected script i.e. `exampleScript` you can now call the UserProxy API
+by using the `MyProxy` namespace:
+
+```JavaScript
+if (MyProxy.isDefined("GM_getValue")) {
+  // ... your code
+}
 ```
 
 Security

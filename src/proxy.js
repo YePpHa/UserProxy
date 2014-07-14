@@ -11,39 +11,43 @@ define(["support", "CustomEvent", "Message", "utils", "memFunction"], function(s
       if (typeof callbackCache[detail.callbackId] === "function") {
         callbackCache[detail.callbackId].apply(null, args);
       }
-      callbackCache[detail.callbackId] = null; // Remove reference for GC.
+      //callbackCache[detail.callbackId] = null; // Remove reference for GC.
     } else {
       throw Error("Malformed detail!", detail);
     }
   }
   
-  function call(method, args, callback) {
-    if (!utils.isArray(args)) {
-      args = [];
-    }
-    
+  function prepareCall(method, callback) {
     if (!has(method)) {
       throw Error(method + " is not a defined function!");
     }
     
-    args = mem.parseObject(args, token, "page");
-    var detail = {
-      method: method,
-      args: args
+    if (typeof callback !== "function") {
+      throw Error("The callback is not a function!");
+    }
+    
+    var id = callbackCache.push(callback) - 1;
+    var args = Array.prototype.slice.call(arguments, 2);
+    
+    return function() {
+      args = args.concat(Array.prototype.slice.call(arguments, 0));
+      
+      args = mem.parseObject(args, token, "page");
+      var detail = {
+        method: method,
+        args: args,
+        id: id
+      };
+      
+      if (support.CustomEvent) {
+        customEvent.fireEvent(token + "-content", detail);
+      } else {
+        message.fireEvent(token + "-content", detail);
+      }
     };
-    
-    if (typeof callback === "function") {
-      detail.id = callbackCache.push(callback) - 1;
-    }
-    
-    if (support.CustomEvent) {
-      customEvent.fireEvent(token + "-content", detail);
-    } else {
-      message.fireEvent(token + "-content", detail);
-    }
   }
   
-  function call2(method, args) {
+  function call(method, args) {
     function setCallback(callback) {
       clearTimeout(timer);
       if (typeof callback === "function") {
@@ -81,6 +85,18 @@ define(["support", "CustomEvent", "Message", "utils", "memFunction"], function(s
     return utils.indexOfArray(method, functions) > -1;
   }
   
+  function getFunction(method) {
+    if (has(method)) {
+      return utils.bind(null, call, method);
+    } else {
+      throw Error(method + " is not defined!");
+    }
+  }
+  
+  function listFunctions() {
+    return JSON.parse(JSON.stringify(functions));
+  }
+  
   var callbackCache = [];
   
   if (support.CustomEvent) {
@@ -90,11 +106,14 @@ define(["support", "CustomEvent", "Message", "utils", "memFunction"], function(s
   }
   
   for (var i = 0, len = functions.length; i < len; i++) {
-    scope[functions[i]] = utils.bind(null, call2, functions[i]);
+    scope[functions[i]] = utils.bind(null, call, functions[i]);
   }
   
   return {
-    call: call2,
-    has: has
+    call: call,
+    prepareCall: prepareCall,
+    getFunction: getFunction,
+    isDefined: has,
+    listFunctions: listFunctions
   };
 });
