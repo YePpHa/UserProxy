@@ -125,7 +125,7 @@ UserProxy.call("GM_getValue", "myKey").then(function(value){
 ```
 
 ### Prepare function call
-If you're going to call the same function with the same callback function mulltiple
+If you're going to call the same function with the same callback function multiple
 times. Then you can use `prepareCall`, where the first argument is the method, the
 second argument is the callback. The arguments after that will be passed to the
 defined function.
