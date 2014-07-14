@@ -37,13 +37,13 @@ You will then have to modify the userscript to handle asynchronous functions ins
 of synchronous functions. The difference is that you have to attach callback functions
 to an asynchrnous function whereas synchronous functions return their result.
 
-So if you need to call `GM_getValue` for the synchronous method it would look like this
+So if you need to call `GM_getValue` synchronously it would look like this
 ```JavaScript
 var myValue = GM_getValue("myKey");
 // ... your code
 ```
 
-whereas for the asynchronous method using UserProxy it would look like this
+whereas if you need to call it asynchronously using UserProxy it would look like this
 ```JavaScript
 GM_getValue("myKey").then(function(myValue){
   // ... your code
