@@ -43,7 +43,7 @@ var myValue = GM_getValue("myKey");
 // ... your code
 ```
 
-whereas if you need to call it asynchronously using UserProxy it would look like this
+whereas in UserProxy every function is asynchronous and needs to be called as
 ```JavaScript
 GM_getValue("myKey").then(function(myValue){
   // ... your code
@@ -57,28 +57,30 @@ the injected script/function.
 
 ### Injecting/Connecting the script (Only for the Userscript)
 To inject your script into the page you will have to make a function which you can
-pass to `connect`:
+pass to `connect`. The function will not be able to access anything outside it's closure.
 ```JavaScript
 function exampleScript() {
   // ... your code
 }
 ```
 
-This function can then be injected into the page by calling
+The `exampleScript` function will be injected into the page by calling `connect`.
 ```JavaScript
 UserProxy.connect(exampleScript);
 ```
 
-The injected function/script will have the variable `window` and `unsafeWindow`
-to refer to the global window.
+The injected function/script will have the variables: `window` and `unsafeWindow`, which
+both refers to the global window.
 
 ### Setting the functions
-To leak functions from the userscript scope to the page scope you need to use the
-function `UserProxy.setFunctions`.
+You can pass functions from the userscript closure to the page closure by defining
+an object with the name of the function as the key of a property and the function
+itself as the value. For the page closure to be able to access the functions
+from the userscript closure the key pairs are needed to be passed to the 
+`UserProxy.setFunctions` function. However remember that try to keep as much
+unsafe code in the userscript closure to prevent any or minimize security holes.
 
-To use the API `UserProxy.setFunctions` you need to create an object where the
-key is the name of the function and the value is the function itself.
-An example of this for both `GM_getValue` and `GM_setValue`:
+An example on how to make functions available to the page closure is below.
 ```JavaScript
 UserProxy.setFunctions({
   "GM_getValue": GM_getValue,
@@ -88,8 +90,9 @@ UserProxy.setFunctions({
 UserProxy.connect(exampleScript);
 ```
 
-Please note that after you have called `connect` you can't change the functions
-for the injected script i.e. `exampleScript`.
+After `UserProxy.connect` have been called it's not possible to change the functions
+available to the page closure from the userscript closure. So be sure to predefine
+anything that's needed.
 
 ### Calling functions
 To call a function can only be done for the functions made available through the
