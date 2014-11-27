@@ -140,7 +140,7 @@ function.
 function callback() {
   // ... your code
 }
-var myFunc = UserProxy.prepareCall("GM_setValue", callback}, "myKey");
+var myFunc = UserProxy.prepareCall("GM_setValue", callback, "myKey");
 
 myFunc("First value"); // Will call GM_setValue("myKey", "First value").then(callback);
 myFunc("Second value"); // Will call GM_setValue("myKey", "Second value").then(callback);
