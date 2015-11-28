@@ -1,5 +1,9 @@
-UserProxy
+UserProxy (ABANDONED)
 ==============
+
+__Please use [Port Library](https://github.com/YePpHa/portlib)__ as it uses Promises
+for async functions and it supports synchronous functions. Moreover, there's an API.
+
 This library will make it possible to inject your userscript into the page and still
 have access to functions like GM_setValue, GM_getValue, GM_log and GM_xmlhttpRequest.
 
